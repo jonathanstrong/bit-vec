@@ -46,7 +46,7 @@
 //! let primes = {
 //!     // Assume all numbers are prime to begin, and then we
 //!     // cross off non-primes progressively
-//!     let mut bv = BitVec::from_elem(max_prime, true);
+//!     let mut bv = BitVec::<u32>::from_elem(max_prime, true);
 //!
 //!     // Neither 0 nor 1 are prime
 //!     bv.set(0, false);
@@ -176,7 +176,7 @@ static FALSE: bool = false;
 /// ```
 /// use bit_vec::BitVec;
 ///
-/// let mut bv = BitVec::from_elem(10, false);
+/// let mut bv = BitVec::<u32>::from_elem(10, false);
 ///
 /// // insert all primes less than 10
 /// bv.set(2, true);
@@ -240,9 +240,7 @@ fn mask_for_bits<B: BitBlock>(bits: usize) -> B {
     (!B::zero()) >> ((B::bits() - bits % B::bits()) % B::bits())
 }
 
-type B = u32;
-
-impl BitVec<u32> {
+impl<B: BitBlock> BitVec<B> {
 
     /// Creates an empty `BitVec`.
     ///
@@ -250,10 +248,10 @@ impl BitVec<u32> {
     ///
     /// ```
     /// use bit_vec::BitVec;
-    /// let mut bv = BitVec::new();
+    /// let mut bv = BitVec::<u32>::new();
     /// ```
     #[inline]
-    pub fn new() -> Self {
+    pub fn new() -> BitVec<B> {
         Default::default()
     }
 
@@ -265,14 +263,14 @@ impl BitVec<u32> {
     /// ```
     /// use bit_vec::BitVec;
     ///
-    /// let mut bv = BitVec::from_elem(10, false);
+    /// let mut bv = BitVec::<u32>::from_elem(10, false);
     /// assert_eq!(bv.len(), 10);
     /// for x in bv.iter() {
     ///     assert_eq!(x, false);
     /// }
     /// ```
     #[inline]
-    pub fn from_elem(nbits: usize, bit: bool) -> Self {
+    pub fn from_elem(nbits: usize, bit: bool) -> BitVec<B> {
         let nblocks = blocks_for_bits::<B>(nbits);
         let mut bit_vec = BitVec {
             storage: vec![if bit { !B::zero() } else { B::zero() }; nblocks],
@@ -306,7 +304,7 @@ impl BitVec<u32> {
     /// ```
     /// use bit_vec::BitVec;
     ///
-    /// let bv = BitVec::from_bytes(&[0b10100000, 0b00010010]);
+    /// let bv = BitVec::<u32>::from_bytes(&[0b10100000, 0b00010010]);
     /// assert!(bv.eq_vec(&[true, false, true, false,
     ///                     false, false, false, false,
     ///                     false, false, false, true,
@@ -349,7 +347,7 @@ impl BitVec<u32> {
     /// ```
     /// use bit_vec::BitVec;
     ///
-    /// let bv = BitVec::from_fn(5, |i| { i % 2 == 0 });
+    /// let bv = BitVec::<u32>::from_fn(5, |i| { i % 2 == 0 });
     /// assert!(bv.eq_vec(&[true, false, true, false, true]));
     /// ```
     #[inline]
@@ -433,7 +431,7 @@ impl<B: BitBlock> BitVec<B> {
     /// ```
     /// use bit_vec::BitVec;
     ///
-    /// let bv = BitVec::from_bytes(&[0b01100000]);
+    /// let bv = BitVec::<u32>::from_bytes(&[0b01100000]);
     /// assert_eq!(bv.get(0), Some(false));
     /// assert_eq!(bv.get(1), Some(true));
     /// assert_eq!(bv.get(100), None);
@@ -464,7 +462,7 @@ impl<B: BitBlock> BitVec<B> {
     /// ```
     /// use bit_vec::BitVec;
     ///
-    /// let mut bv = BitVec::from_elem(5, false);
+    /// let mut bv = BitVec::<u32>::from_elem(5, false);
     /// bv.set(3, true);
     /// assert_eq!(bv[3], true);
     /// ```
@@ -489,9 +487,9 @@ impl<B: BitBlock> BitVec<B> {
     /// let before = 0b01100000;
     /// let after  = 0b11111111;
     ///
-    /// let mut bv = BitVec::from_bytes(&[before]);
+    /// let mut bv = BitVec::<u32>::from_bytes(&[before]);
     /// bv.set_all();
-    /// assert_eq!(bv, BitVec::from_bytes(&[after]));
+    /// assert_eq!(bv, BitVec::<u32>::from_bytes(&[after]));
     /// ```
     #[inline]
     pub fn set_all(&mut self) {
@@ -509,9 +507,9 @@ impl<B: BitBlock> BitVec<B> {
     /// let before = 0b01100000;
     /// let after  = 0b10011111;
     ///
-    /// let mut bv = BitVec::from_bytes(&[before]);
+    /// let mut bv = BitVec::<u32>::from_bytes(&[before]);
     /// bv.negate();
-    /// assert_eq!(bv, BitVec::from_bytes(&[after]));
+    /// assert_eq!(bv, BitVec::<u32>::from_bytes(&[after]));
     /// ```
     #[inline]
     pub fn negate(&mut self) {
@@ -538,11 +536,11 @@ impl<B: BitBlock> BitVec<B> {
     /// let b   = 0b01011010;
     /// let res = 0b01111110;
     ///
-    /// let mut a = BitVec::from_bytes(&[a]);
-    /// let b = BitVec::from_bytes(&[b]);
+    /// let mut a = BitVec::<u32>::from_bytes(&[a]);
+    /// let b = BitVec::<u32>::from_bytes(&[b]);
     ///
     /// assert!(a.union(&b));
-    /// assert_eq!(a, BitVec::from_bytes(&[res]));
+    /// assert_eq!(a, BitVec::<u32>::from_bytes(&[res]));
     /// ```
     #[inline]
     pub fn union(&mut self, other: &Self) -> bool {
@@ -568,11 +566,11 @@ impl<B: BitBlock> BitVec<B> {
     /// let b   = 0b01011010;
     /// let res = 0b01000000;
     ///
-    /// let mut a = BitVec::from_bytes(&[a]);
-    /// let b = BitVec::from_bytes(&[b]);
+    /// let mut a = BitVec::<u32>::from_bytes(&[a]);
+    /// let b = BitVec::<u32>::from_bytes(&[b]);
     ///
     /// assert!(a.intersect(&b));
-    /// assert_eq!(a, BitVec::from_bytes(&[res]));
+    /// assert_eq!(a, BitVec::<u32>::from_bytes(&[res]));
     /// ```
     #[inline]
     pub fn intersect(&mut self, other: &Self) -> bool {
@@ -599,17 +597,17 @@ impl<B: BitBlock> BitVec<B> {
     /// let a_b = 0b00100100; // a - b
     /// let b_a = 0b00011010; // b - a
     ///
-    /// let mut bva = BitVec::from_bytes(&[a]);
-    /// let bvb = BitVec::from_bytes(&[b]);
+    /// let mut bva = BitVec::<u32>::from_bytes(&[a]);
+    /// let bvb = BitVec::<u32>::from_bytes(&[b]);
     ///
     /// assert!(bva.difference(&bvb));
-    /// assert_eq!(bva, BitVec::from_bytes(&[a_b]));
+    /// assert_eq!(bva, BitVec::<u32>::from_bytes(&[a_b]));
     ///
-    /// let bva = BitVec::from_bytes(&[a]);
-    /// let mut bvb = BitVec::from_bytes(&[b]);
+    /// let bva = BitVec::<u32>::from_bytes(&[a]);
+    /// let mut bvb = BitVec::<u32>::from_bytes(&[b]);
     ///
     /// assert!(bvb.difference(&bva));
-    /// assert_eq!(bvb, BitVec::from_bytes(&[b_a]));
+    /// assert_eq!(bvb, BitVec::<u32>::from_bytes(&[b_a]));
     /// ```
     #[inline]
     pub fn difference(&mut self, other: &Self) -> bool {
@@ -623,7 +621,7 @@ impl<B: BitBlock> BitVec<B> {
     /// ```
     /// use bit_vec::BitVec;
     ///
-    /// let mut bv = BitVec::from_elem(5, true);
+    /// let mut bv = BitVec::<u32>::from_elem(5, true);
     /// assert_eq!(bv.all(), true);
     ///
     /// bv.set(1, false);
@@ -648,7 +646,7 @@ impl<B: BitBlock> BitVec<B> {
     /// ```
     /// use bit_vec::BitVec;
     ///
-    /// let bv = BitVec::from_bytes(&[0b01110100, 0b10010010]);
+    /// let bv = BitVec::<u32>::from_bytes(&[0b01110100, 0b10010010]);
     /// assert_eq!(bv.iter().filter(|x| *x).count(), 7);
     /// ```
     #[inline]
@@ -768,7 +766,7 @@ impl<B: BitBlock> BitVec<B> {
     /// ```
     /// use bit_vec::BitVec;
     ///
-    /// let mut bv = BitVec::from_elem(10, false);
+    /// let mut bv = BitVec::<u32>::from_elem(10, false);
     /// assert_eq!(bv.none(), true);
     ///
     /// bv.set(3, true);
@@ -786,7 +784,7 @@ impl<B: BitBlock> BitVec<B> {
     /// ```
     /// use bit_vec::BitVec;
     ///
-    /// let mut bv = BitVec::from_elem(10, false);
+    /// let mut bv = BitVec::<u32>::from_elem(10, false);
     /// assert_eq!(bv.any(), false);
     ///
     /// bv.set(3, true);
@@ -807,12 +805,12 @@ impl<B: BitBlock> BitVec<B> {
     /// ```
     /// use bit_vec::BitVec;
     ///
-    /// let mut bv = BitVec::from_elem(3, true);
+    /// let mut bv = BitVec::<u32>::from_elem(3, true);
     /// bv.set(1, false);
     ///
     /// assert_eq!(bv.to_bytes(), [0b10100000]);
     ///
-    /// let mut bv = BitVec::from_elem(9, false);
+    /// let mut bv = BitVec::<u32>::from_elem(9, false);
     /// bv.set(2, true);
     /// bv.set(8, true);
     ///
@@ -855,7 +853,7 @@ impl<B: BitBlock> BitVec<B> {
     /// ```
     /// use bit_vec::BitVec;
     ///
-    /// let bv = BitVec::from_bytes(&[0b10100000]);
+    /// let bv = BitVec::<u32>::from_bytes(&[0b10100000]);
     ///
     /// assert!(bv.eq_vec(&[true, false, true, false,
     ///                     false, false, false, false]));
@@ -876,7 +874,7 @@ impl<B: BitBlock> BitVec<B> {
     /// ```
     /// use bit_vec::BitVec;
     ///
-    /// let mut bv = BitVec::from_bytes(&[0b01001011]);
+    /// let mut bv = BitVec::<u32>::from_bytes(&[0b01001011]);
     /// bv.truncate(2);
     /// assert!(bv.eq_vec(&[false, true]));
     /// ```
@@ -902,7 +900,7 @@ impl<B: BitBlock> BitVec<B> {
     /// ```
     /// use bit_vec::BitVec;
     ///
-    /// let mut bv = BitVec::from_elem(3, false);
+    /// let mut bv = BitVec::<u32>::from_elem(3, false);
     /// bv.reserve(10);
     /// assert_eq!(bv.len(), 3);
     /// assert!(bv.capacity() >= 13);
@@ -932,7 +930,7 @@ impl<B: BitBlock> BitVec<B> {
     /// ```
     /// use bit_vec::BitVec;
     ///
-    /// let mut bv = BitVec::from_elem(3, false);
+    /// let mut bv = BitVec::<u32>::from_elem(3, false);
     /// bv.reserve(10);
     /// assert_eq!(bv.len(), 3);
     /// assert!(bv.capacity() >= 13);
@@ -954,7 +952,7 @@ impl<B: BitBlock> BitVec<B> {
     /// ```
     /// use bit_vec::BitVec;
     ///
-    /// let mut bv = BitVec::new();
+    /// let mut bv = BitVec::<u32>::new();
     /// bv.reserve(10);
     /// assert!(bv.capacity() >= 10);
     /// ```
@@ -974,7 +972,7 @@ impl<B: BitBlock> BitVec<B> {
     /// ```
     /// use bit_vec::BitVec;
     ///
-    /// let mut bv = BitVec::from_bytes(&[0b01001011]);
+    /// let mut bv = BitVec::<u32>::from_bytes(&[0b01001011]);
     /// bv.grow(2, true);
     /// assert_eq!(bv.len(), 10);
     /// assert_eq!(bv.to_bytes(), [0b01001011, 0b11000000]);
@@ -1025,7 +1023,7 @@ impl<B: BitBlock> BitVec<B> {
     /// ```
     /// use bit_vec::BitVec;
     ///
-    /// let mut bv = BitVec::from_bytes(&[0b01001001]);
+    /// let mut bv = BitVec::<u32>::from_bytes(&[0b01001001]);
     /// assert_eq!(bv.pop(), Some(true));
     /// assert_eq!(bv.pop(), Some(false));
     /// assert_eq!(bv.len(), 6);
@@ -1055,7 +1053,7 @@ impl<B: BitBlock> BitVec<B> {
     /// ```
     /// use bit_vec::BitVec;
     ///
-    /// let mut bv = BitVec::new();
+    /// let mut bv = BitVec::<u32>::new();
     /// bv.push(true);
     /// bv.push(false);
     /// assert!(bv.eq_vec(&[true, false]));
@@ -1324,16 +1322,16 @@ mod tests {
 
     #[test]
     fn test_to_str() {
-        let zerolen = BitVec::new();
+        let zerolen: BitVec<u32> = BitVec::new();
         assert_eq!(format!("{:?}", zerolen), "");
 
-        let eightbits = BitVec::from_elem(8, false);
+        let eightbits: BitVec<u32> = BitVec::from_elem(8, false);
         assert_eq!(format!("{:?}", eightbits), "00000000")
     }
 
     #[test]
     fn test_0_elements() {
-        let act = BitVec::new();
+        let act = BitVec::<u32>::new();
         let exp = Vec::new();
         assert!(act.eq_vec(&exp));
         assert!(act.none() && act.all());
@@ -1341,17 +1339,17 @@ mod tests {
 
     #[test]
     fn test_1_element() {
-        let mut act = BitVec::from_elem(1, false);
+        let mut act = BitVec::<u32>::from_elem(1, false);
         assert!(act.eq_vec(&[false]));
         assert!(act.none() && !act.all());
-        act = BitVec::from_elem(1, true);
+        act = BitVec::<u32>::from_elem(1, true);
         assert!(act.eq_vec(&[true]));
         assert!(!act.none() && act.all());
     }
 
     #[test]
     fn test_2_elements() {
-        let mut b = BitVec::from_elem(2, false);
+        let mut b = BitVec::<u32>::from_elem(2, false);
         b.set(0, true);
         b.set(1, false);
         assert_eq!(format!("{:?}", b), "10");
@@ -1363,18 +1361,18 @@ mod tests {
         let mut act;
         // all 0
 
-        act = BitVec::from_elem(10, false);
+        act = BitVec::<u32>::from_elem(10, false);
         assert!((act.eq_vec(
                     &[false, false, false, false, false, false, false, false, false, false])));
         assert!(act.none() && !act.all());
         // all 1
 
-        act = BitVec::from_elem(10, true);
+        act = BitVec::<u32>::from_elem(10, true);
         assert!((act.eq_vec(&[true, true, true, true, true, true, true, true, true, true])));
         assert!(!act.none() && act.all());
         // mixed
 
-        act = BitVec::from_elem(10, false);
+        act = BitVec::<u32>::from_elem(10, false);
         act.set(0, true);
         act.set(1, true);
         act.set(2, true);
@@ -1384,7 +1382,7 @@ mod tests {
         assert!(!act.none() && !act.all());
         // mixed
 
-        act = BitVec::from_elem(10, false);
+        act = BitVec::<u32>::from_elem(10, false);
         act.set(5, true);
         act.set(6, true);
         act.set(7, true);
@@ -1394,7 +1392,7 @@ mod tests {
         assert!(!act.none() && !act.all());
         // mixed
 
-        act = BitVec::from_elem(10, false);
+        act = BitVec::<u32>::from_elem(10, false);
         act.set(0, true);
         act.set(3, true);
         act.set(6, true);
@@ -1408,7 +1406,7 @@ mod tests {
         let mut act;
         // all 0
 
-        act = BitVec::from_elem(31, false);
+        act = BitVec::<u32>::from_elem(31, false);
         assert!(act.eq_vec(
                 &[false, false, false, false, false, false, false, false, false, false, false,
                   false, false, false, false, false, false, false, false, false, false, false,
@@ -1416,7 +1414,7 @@ mod tests {
         assert!(act.none() && !act.all());
         // all 1
 
-        act = BitVec::from_elem(31, true);
+        act = BitVec::<u32>::from_elem(31, true);
         assert!(act.eq_vec(
                 &[true, true, true, true, true, true, true, true, true, true, true, true, true,
                   true, true, true, true, true, true, true, true, true, true, true, true, true,
@@ -1424,7 +1422,7 @@ mod tests {
         assert!(!act.none() && act.all());
         // mixed
 
-        act = BitVec::from_elem(31, false);
+        act = BitVec::<u32>::from_elem(31, false);
         act.set(0, true);
         act.set(1, true);
         act.set(2, true);
@@ -1440,7 +1438,7 @@ mod tests {
         assert!(!act.none() && !act.all());
         // mixed
 
-        act = BitVec::from_elem(31, false);
+        act = BitVec::<u32>::from_elem(31, false);
         act.set(16, true);
         act.set(17, true);
         act.set(18, true);
@@ -1456,7 +1454,7 @@ mod tests {
         assert!(!act.none() && !act.all());
         // mixed
 
-        act = BitVec::from_elem(31, false);
+        act = BitVec::<u32>::from_elem(31, false);
         act.set(24, true);
         act.set(25, true);
         act.set(26, true);
@@ -1471,7 +1469,7 @@ mod tests {
         assert!(!act.none() && !act.all());
         // mixed
 
-        act = BitVec::from_elem(31, false);
+        act = BitVec::<u32>::from_elem(31, false);
         act.set(3, true);
         act.set(17, true);
         act.set(30, true);
@@ -1487,7 +1485,7 @@ mod tests {
         let mut act;
         // all 0
 
-        act = BitVec::from_elem(32, false);
+        act = BitVec::<u32>::from_elem(32, false);
         assert!(act.eq_vec(
                 &[false, false, false, false, false, false, false, false, false, false, false,
                   false, false, false, false, false, false, false, false, false, false, false,
@@ -1495,7 +1493,7 @@ mod tests {
         assert!(act.none() && !act.all());
         // all 1
 
-        act = BitVec::from_elem(32, true);
+        act = BitVec::<u32>::from_elem(32, true);
         assert!(act.eq_vec(
                 &[true, true, true, true, true, true, true, true, true, true, true, true, true,
                   true, true, true, true, true, true, true, true, true, true, true, true, true,
@@ -1503,7 +1501,7 @@ mod tests {
         assert!(!act.none() && act.all());
         // mixed
 
-        act = BitVec::from_elem(32, false);
+        act = BitVec::<u32>::from_elem(32, false);
         act.set(0, true);
         act.set(1, true);
         act.set(2, true);
@@ -1519,7 +1517,7 @@ mod tests {
         assert!(!act.none() && !act.all());
         // mixed
 
-        act = BitVec::from_elem(32, false);
+        act = BitVec::<u32>::from_elem(32, false);
         act.set(16, true);
         act.set(17, true);
         act.set(18, true);
@@ -1535,7 +1533,7 @@ mod tests {
         assert!(!act.none() && !act.all());
         // mixed
 
-        act = BitVec::from_elem(32, false);
+        act = BitVec::<u32>::from_elem(32, false);
         act.set(24, true);
         act.set(25, true);
         act.set(26, true);
@@ -1551,7 +1549,7 @@ mod tests {
         assert!(!act.none() && !act.all());
         // mixed
 
-        act = BitVec::from_elem(32, false);
+        act = BitVec::<u32>::from_elem(32, false);
         act.set(3, true);
         act.set(17, true);
         act.set(30, true);
@@ -1568,7 +1566,7 @@ mod tests {
         let mut act;
         // all 0
 
-        act = BitVec::from_elem(33, false);
+        act = BitVec::<u32>::from_elem(33, false);
         assert!(act.eq_vec(
                 &[false, false, false, false, false, false, false, false, false, false, false,
                   false, false, false, false, false, false, false, false, false, false, false,
@@ -1576,7 +1574,7 @@ mod tests {
         assert!(act.none() && !act.all());
         // all 1
 
-        act = BitVec::from_elem(33, true);
+        act = BitVec::<u32>::from_elem(33, true);
         assert!(act.eq_vec(
                 &[true, true, true, true, true, true, true, true, true, true, true, true, true,
                   true, true, true, true, true, true, true, true, true, true, true, true, true,
@@ -1584,7 +1582,7 @@ mod tests {
         assert!(!act.none() && act.all());
         // mixed
 
-        act = BitVec::from_elem(33, false);
+        act = BitVec::<u32>::from_elem(33, false);
         act.set(0, true);
         act.set(1, true);
         act.set(2, true);
@@ -1600,7 +1598,7 @@ mod tests {
         assert!(!act.none() && !act.all());
         // mixed
 
-        act = BitVec::from_elem(33, false);
+        act = BitVec::<u32>::from_elem(33, false);
         act.set(16, true);
         act.set(17, true);
         act.set(18, true);
@@ -1616,7 +1614,7 @@ mod tests {
         assert!(!act.none() && !act.all());
         // mixed
 
-        act = BitVec::from_elem(33, false);
+        act = BitVec::<u32>::from_elem(33, false);
         act.set(24, true);
         act.set(25, true);
         act.set(26, true);
@@ -1632,7 +1630,7 @@ mod tests {
         assert!(!act.none() && !act.all());
         // mixed
 
-        act = BitVec::from_elem(33, false);
+        act = BitVec::<u32>::from_elem(33, false);
         act.set(3, true);
         act.set(17, true);
         act.set(30, true);
@@ -1647,24 +1645,24 @@ mod tests {
 
     #[test]
     fn test_equal_differing_sizes() {
-        let v0 = BitVec::from_elem(10, false);
-        let v1 = BitVec::from_elem(11, false);
+        let v0 = BitVec::<u32>::from_elem(10, false);
+        let v1 = BitVec::<u32>::from_elem(11, false);
         assert!(v0 != v1);
     }
 
     #[test]
     fn test_equal_greatly_differing_sizes() {
-        let v0 = BitVec::from_elem(10, false);
-        let v1 = BitVec::from_elem(110, false);
+        let v0 = BitVec::<u32>::from_elem(10, false);
+        let v1 = BitVec::<u32>::from_elem(110, false);
         assert!(v0 != v1);
     }
 
     #[test]
     fn test_equal_sneaky_small() {
-        let mut a = BitVec::from_elem(1, false);
+        let mut a = BitVec::<u32>::from_elem(1, false);
         a.set(0, true);
 
-        let mut b = BitVec::from_elem(1, true);
+        let mut b = BitVec::<u32>::from_elem(1, true);
         b.set(0, true);
 
         assert_eq!(a, b);
@@ -1672,12 +1670,12 @@ mod tests {
 
     #[test]
     fn test_equal_sneaky_big() {
-        let mut a = BitVec::from_elem(100, false);
+        let mut a = BitVec::<u32>::from_elem(100, false);
         for i in 0..100 {
             a.set(i, true);
         }
 
-        let mut b = BitVec::from_elem(100, true);
+        let mut b = BitVec::<u32>::from_elem(100, true);
         for i in 0..100 {
             b.set(i, true);
         }
@@ -1687,18 +1685,18 @@ mod tests {
 
     #[test]
     fn test_from_bytes() {
-        let bit_vec = BitVec::from_bytes(&[0b10110110, 0b00000000, 0b11111111]);
+        let bit_vec = BitVec::<u32>::from_bytes(&[0b10110110, 0b00000000, 0b11111111]);
         let str = concat!("10110110", "00000000", "11111111");
         assert_eq!(format!("{:?}", bit_vec), str);
     }
 
     #[test]
     fn test_to_bytes() {
-        let mut bv = BitVec::from_elem(3, true);
+        let mut bv = BitVec::<u32>::from_elem(3, true);
         bv.set(1, false);
         assert_eq!(bv.to_bytes(), [0b10100000]);
 
-        let mut bv = BitVec::from_elem(9, false);
+        let mut bv = BitVec::<u32>::from_elem(9, false);
         bv.set(2, true);
         bv.set(8, true);
         assert_eq!(bv.to_bytes(), [0b00100000, 0b10000000]);
@@ -1714,7 +1712,7 @@ mod tests {
     #[test]
     fn test_to_bools() {
         let bools = vec![false, false, true, false, false, true, true, false];
-        assert_eq!(BitVec::from_bytes(&[0b00100110]).iter().collect::<Vec<bool>>(), bools);
+        assert_eq!(BitVec::<u32>::from_bytes(&[0b00100110]).iter().collect::<Vec<bool>>(), bools);
     }
 
     #[test]
@@ -1731,8 +1729,8 @@ mod tests {
 
     #[test]
     fn test_small_difference() {
-        let mut b1 = BitVec::from_elem(3, false);
-        let mut b2 = BitVec::from_elem(3, false);
+        let mut b1 = BitVec::<u32>::from_elem(3, false);
+        let mut b2 = BitVec::<u32>::from_elem(3, false);
         b1.set(0, true);
         b1.set(1, true);
         b2.set(1, true);
@@ -1745,8 +1743,8 @@ mod tests {
 
     #[test]
     fn test_big_difference() {
-        let mut b1 = BitVec::from_elem(100, false);
-        let mut b2 = BitVec::from_elem(100, false);
+        let mut b1 = BitVec::<u32>::from_elem(100, false);
+        let mut b2 = BitVec::<u32>::from_elem(100, false);
         b1.set(0, true);
         b1.set(40, true);
         b2.set(40, true);
@@ -1759,7 +1757,7 @@ mod tests {
 
     #[test]
     fn test_small_clear() {
-        let mut b = BitVec::from_elem(14, true);
+        let mut b = BitVec::<u32>::from_elem(14, true);
         assert!(!b.none() && b.all());
         b.clear();
         assert!(b.none() && !b.all());
@@ -1767,7 +1765,7 @@ mod tests {
 
     #[test]
     fn test_big_clear() {
-        let mut b = BitVec::from_elem(140, true);
+        let mut b = BitVec::<u32>::from_elem(140, true);
         assert!(!b.none() && b.all());
         b.clear();
         assert!(b.none() && !b.all());
@@ -1775,8 +1773,8 @@ mod tests {
 
     #[test]
     fn test_bit_vec_lt() {
-        let mut a = BitVec::from_elem(5, false);
-        let mut b = BitVec::from_elem(5, false);
+        let mut a = BitVec::<u32>::from_elem(5, false);
+        let mut b = BitVec::<u32>::from_elem(5, false);
 
         assert!(!(a < b) && !(b < a));
         b.set(2, true);
@@ -1791,8 +1789,8 @@ mod tests {
 
     #[test]
     fn test_ord() {
-        let mut a = BitVec::from_elem(5, false);
-        let mut b = BitVec::from_elem(5, false);
+        let mut a = BitVec::<u32>::from_elem(5, false);
+        let mut b = BitVec::<u32>::from_elem(5, false);
 
         assert!(a <= b && a >= b);
         a.set(1, true);
@@ -1807,17 +1805,17 @@ mod tests {
 
     #[test]
     fn test_small_bit_vec_tests() {
-        let v = BitVec::from_bytes(&[0]);
+        let v = BitVec::<u32>::from_bytes(&[0]);
         assert!(!v.all());
         assert!(!v.any());
         assert!(v.none());
 
-        let v = BitVec::from_bytes(&[0b00010100]);
+        let v = BitVec::<u32>::from_bytes(&[0b00010100]);
         assert!(!v.all());
         assert!(v.any());
         assert!(!v.none());
 
-        let v = BitVec::from_bytes(&[0xFF]);
+        let v = BitVec::<u32>::from_bytes(&[0xFF]);
         assert!(v.all());
         assert!(v.any());
         assert!(!v.none());
@@ -1825,7 +1823,7 @@ mod tests {
 
     #[test]
     fn test_big_bit_vec_tests() {
-        let v = BitVec::from_bytes(&[ // 88 bits
+        let v = BitVec::<u32>::from_bytes(&[ // 88 bits
             0, 0, 0, 0,
             0, 0, 0, 0,
             0, 0, 0]);
@@ -1833,7 +1831,7 @@ mod tests {
         assert!(!v.any());
         assert!(v.none());
 
-        let v = BitVec::from_bytes(&[ // 88 bits
+        let v = BitVec::<u32>::from_bytes(&[ // 88 bits
             0, 0, 0b00010100, 0,
             0, 0, 0, 0b00110100,
             0, 0, 0]);
@@ -1841,7 +1839,7 @@ mod tests {
         assert!(v.any());
         assert!(!v.none());
 
-        let v = BitVec::from_bytes(&[ // 88 bits
+        let v = BitVec::<u32>::from_bytes(&[ // 88 bits
             0xFF, 0xFF, 0xFF, 0xFF,
             0xFF, 0xFF, 0xFF, 0xFF,
             0xFF, 0xFF, 0xFF]);
@@ -1852,7 +1850,7 @@ mod tests {
 
     #[test]
     fn test_bit_vec_push_pop() {
-        let mut s = BitVec::from_elem(5 * U32_BITS - 2, false);
+        let mut s = BitVec::<u32>::from_elem(5 * U32_BITS - 2, false);
         assert_eq!(s.len(), 5 * U32_BITS - 2);
         assert_eq!(s[5 * U32_BITS - 3], false);
         s.push(true);
@@ -1875,28 +1873,28 @@ mod tests {
 
     #[test]
     fn test_bit_vec_truncate() {
-        let mut s = BitVec::from_elem(5 * U32_BITS, true);
+        let mut s = BitVec::<u32>::from_elem(5 * U32_BITS, true);
 
-        assert_eq!(s, BitVec::from_elem(5 * U32_BITS, true));
+        assert_eq!(s, BitVec::<u32>::from_elem(5 * U32_BITS, true));
         assert_eq!(s.len(), 5 * U32_BITS);
         s.truncate(4 * U32_BITS);
-        assert_eq!(s, BitVec::from_elem(4 * U32_BITS, true));
+        assert_eq!(s, BitVec::<u32>::from_elem(4 * U32_BITS, true));
         assert_eq!(s.len(), 4 * U32_BITS);
         // Truncating to a size > s.len() should be a noop
         s.truncate(5 * U32_BITS);
-        assert_eq!(s, BitVec::from_elem(4 * U32_BITS, true));
+        assert_eq!(s, BitVec::<u32>::from_elem(4 * U32_BITS, true));
         assert_eq!(s.len(), 4 * U32_BITS);
         s.truncate(3 * U32_BITS - 10);
-        assert_eq!(s, BitVec::from_elem(3 * U32_BITS - 10, true));
+        assert_eq!(s, BitVec::<u32>::from_elem(3 * U32_BITS - 10, true));
         assert_eq!(s.len(), 3 * U32_BITS - 10);
         s.truncate(0);
-        assert_eq!(s, BitVec::from_elem(0, true));
+        assert_eq!(s, BitVec::<u32>::from_elem(0, true));
         assert_eq!(s.len(), 0);
     }
 
     #[test]
     fn test_bit_vec_reserve() {
-        let mut s = BitVec::from_elem(5 * U32_BITS, true);
+        let mut s = BitVec::<u32>::from_elem(5 * U32_BITS, true);
         // Check capacity
         assert!(s.capacity() >= 5 * U32_BITS);
         s.reserve(2 * U32_BITS);
@@ -1920,24 +1918,24 @@ mod tests {
 
     #[test]
     fn test_bit_vec_grow() {
-        let mut bit_vec = BitVec::from_bytes(&[0b10110110, 0b00000000, 0b10101010]);
+        let mut bit_vec = BitVec::<u32>::from_bytes(&[0b10110110, 0b00000000, 0b10101010]);
         bit_vec.grow(32, true);
-        assert_eq!(bit_vec, BitVec::from_bytes(&[0b10110110, 0b00000000, 0b10101010,
+        assert_eq!(bit_vec, BitVec::<u32>::from_bytes(&[0b10110110, 0b00000000, 0b10101010,
                                      0xFF, 0xFF, 0xFF, 0xFF]));
         bit_vec.grow(64, false);
-        assert_eq!(bit_vec, BitVec::from_bytes(&[0b10110110, 0b00000000, 0b10101010,
+        assert_eq!(bit_vec, BitVec::<u32>::from_bytes(&[0b10110110, 0b00000000, 0b10101010,
                                      0xFF, 0xFF, 0xFF, 0xFF, 0, 0, 0, 0, 0, 0, 0, 0]));
         bit_vec.grow(16, true);
-        assert_eq!(bit_vec, BitVec::from_bytes(&[0b10110110, 0b00000000, 0b10101010,
+        assert_eq!(bit_vec, BitVec::<u32>::from_bytes(&[0b10110110, 0b00000000, 0b10101010,
                                      0xFF, 0xFF, 0xFF, 0xFF, 0, 0, 0, 0, 0, 0, 0, 0, 0xFF, 0xFF]));
     }
 
     #[test]
     fn test_bit_vec_extend() {
-        let mut bit_vec = BitVec::from_bytes(&[0b10110110, 0b00000000, 0b11111111]);
-        let ext = BitVec::from_bytes(&[0b01001001, 0b10010010, 0b10111101]);
+        let mut bit_vec = BitVec::<u32>::from_bytes(&[0b10110110, 0b00000000, 0b11111111]);
+        let ext = BitVec::<u32>::from_bytes(&[0b01001001, 0b10010010, 0b10111101]);
         bit_vec.extend(ext.iter());
-        assert_eq!(bit_vec, BitVec::from_bytes(&[0b10110110, 0b00000000, 0b11111111,
+        assert_eq!(bit_vec, BitVec::<u32>::from_bytes(&[0b10110110, 0b00000000, 0b11111111,
                                      0b01001001, 0b10010010, 0b10111101]));
     }
 
@@ -2117,5 +2115,5 @@ mod tests {
     }
 }
 
-#[cfg(all(test, feature = "nightly"))] mod bench;
+// #[cfg(all(test, feature = "nightly"))] mod bench;
 
