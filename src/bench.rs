@@ -10,6 +10,7 @@
 
 use super::BitVec;
 use rand::{Rng, weak_rng, XorShiftRng};
+use std::collections::BTreeSet;
 
 use test::{Bencher, black_box};
 
@@ -57,6 +58,21 @@ fn bench_bit_set_big_variable(b: &mut Bencher) {
 }
 
 #[bench]
+fn bench_bit_set_rng_overhead(b: &mut Bencher) {
+    let mut r = rng();
+    let mut bit_vec = BitVec::<u32>::from_elem(BENCH_BITS, false);
+    b.iter(|| {
+        let mut sum = 0;
+        let mut x = false;
+        for _ in 0..100 {
+            sum += r.next_u32() as usize;
+            x = x && r.gen();
+        }
+        (sum, x)
+    });
+}
+
+#[bench]
 fn bench_bit_set_small(b: &mut Bencher) {
     let mut r = rng();
     let mut bit_vec = BitVec::<u32>::from_elem(U32_BITS, false);
@@ -78,6 +94,86 @@ fn bench_bit_vec_big_union(b: &mut Bencher) {
 }
 
 #[bench]
+fn bench_bit_vec_big_union_u64_storage(b: &mut Bencher) {
+    let mut b1 = BitVec::<u64>::from_elem(BENCH_BITS, false);
+    let b2 = BitVec::<u64>::from_elem(BENCH_BITS, false);
+    b.iter(|| {
+        b1.union(&b2)
+    });
+}
+
+#[bench]
+fn bench_bit_vec_big_cloned_union(b: &mut Bencher) {
+    let mut b1 = BitVec::<u32>::from_elem(BENCH_BITS, false);
+    let b2 = BitVec::<u32>::from_elem(BENCH_BITS, false);
+    b.iter(|| {
+        let mut b3 = b1.clone();
+        b3.union(&b2);
+        b3
+    })
+}
+
+#[bench]
+fn bench_bit_vec_big_cloned_union_u64_storage(b: &mut Bencher) {
+    let mut b1 = BitVec::<u64>::from_elem(BENCH_BITS, false);
+    let b2 = BitVec::<u64>::from_elem(BENCH_BITS, false);
+    b.iter(|| {
+        let mut b3 = b1.clone();
+        b3.union(&b2);
+        b3
+    })
+}
+
+#[bench]
+fn bench_bit_vec_big_cloned_union_u8_storage(b: &mut Bencher) {
+    let mut b1 = BitVec::<u8>::from_elem(BENCH_BITS, false);
+    let b2 = BitVec::<u8>::from_elem(BENCH_BITS, false);
+    b.iter(|| {
+        let mut b3 = b1.clone();
+        b3.union(&b2);
+        b3
+    })
+}
+
+#[bench]
+fn bench_clone_big(b: &mut Bencher) {
+    let xs = BitVec::<u32>::from_elem(BENCH_BITS, false);
+    b.iter(|| {
+        xs.clone()
+    });
+}
+
+#[bench]
+fn bench_btreeset_big_union(b: &mut Bencher) {
+    let mut r = rng();
+    let mut xs = BTreeSet::new();
+    let mut ys = BTreeSet::new();
+    for _ in 0..(BENCH_BITS / 4) {
+        xs.insert(r.gen::<usize>());
+        ys.insert(r.gen::<usize>());
+    }
+
+    b.iter(|| {
+        xs.union(&ys).cloned().collect::<BTreeSet<usize>>()
+    });
+}
+
+#[bench]
+fn bench_btreeset_big_union_collect_vec(b: &mut Bencher) {
+    let mut r = rng();
+    let mut xs = BTreeSet::new();
+    let mut ys = BTreeSet::new();
+    for _ in 0..(BENCH_BITS / 4) {
+        xs.insert(r.gen::<usize>());
+        ys.insert(r.gen::<usize>());
+    }
+
+    b.iter(|| {
+        xs.union(&ys).cloned().collect::<Vec<usize>>()
+    });
+}
+
+#[bench]
 fn bench_bit_vec_small_iter(b: &mut Bencher) {
     let bit_vec = BitVec::<u32>::from_elem(U32_BITS, false);
     b.iter(|| {
@@ -89,6 +185,18 @@ fn bench_bit_vec_small_iter(b: &mut Bencher) {
         }
         sum
     })
+}
+
+#[bench]
+fn bench_u32_vec_big_iter(b: &mut Bencher) {
+    let xs: Vec<u32> = vec![0; BENCH_BITS];
+    b.iter(|| {
+        let mut sum = 0usize;
+        for pres in &xs {
+            sum += *pres as usize;
+        }
+        sum
+    });
 }
 
 #[bench]
