@@ -35,7 +35,7 @@ fn bench_usize_small(b: &mut Bencher) {
 #[bench]
 fn bench_bit_set_big_fixed(b: &mut Bencher) {
     let mut r = rng();
-    let mut bit_vec = BitVec::from_elem(BENCH_BITS, false);
+    let mut bit_vec = BitVec::<u32>::from_elem(BENCH_BITS, false);
     b.iter(|| {
         for _ in 0..100 {
             bit_vec.set((r.next_u32() as usize) % BENCH_BITS, true);
@@ -47,7 +47,7 @@ fn bench_bit_set_big_fixed(b: &mut Bencher) {
 #[bench]
 fn bench_bit_set_big_variable(b: &mut Bencher) {
     let mut r = rng();
-    let mut bit_vec = BitVec::from_elem(BENCH_BITS, false);
+    let mut bit_vec = BitVec::<u32>::from_elem(BENCH_BITS, false);
     b.iter(|| {
         for _ in 0..100 {
             bit_vec.set((r.next_u32() as usize) % BENCH_BITS, r.gen());
@@ -59,7 +59,7 @@ fn bench_bit_set_big_variable(b: &mut Bencher) {
 #[bench]
 fn bench_bit_set_small(b: &mut Bencher) {
     let mut r = rng();
-    let mut bit_vec = BitVec::from_elem(U32_BITS, false);
+    let mut bit_vec = BitVec::<u32>::from_elem(U32_BITS, false);
     b.iter(|| {
         for _ in 0..100 {
             bit_vec.set((r.next_u32() as usize) % U32_BITS, true);
@@ -70,8 +70,8 @@ fn bench_bit_set_small(b: &mut Bencher) {
 
 #[bench]
 fn bench_bit_vec_big_union(b: &mut Bencher) {
-    let mut b1 = BitVec::from_elem(BENCH_BITS, false);
-    let b2 = BitVec::from_elem(BENCH_BITS, false);
+    let mut b1 = BitVec::<u32>::from_elem(BENCH_BITS, false);
+    let b2 = BitVec::<u32>::from_elem(BENCH_BITS, false);
     b.iter(|| {
         b1.union(&b2)
     })
@@ -79,7 +79,7 @@ fn bench_bit_vec_big_union(b: &mut Bencher) {
 
 #[bench]
 fn bench_bit_vec_small_iter(b: &mut Bencher) {
-    let bit_vec = BitVec::from_elem(U32_BITS, false);
+    let bit_vec = BitVec::<u32>::from_elem(U32_BITS, false);
     b.iter(|| {
         let mut sum = 0;
         for _ in 0..10 {
@@ -93,7 +93,7 @@ fn bench_bit_vec_small_iter(b: &mut Bencher) {
 
 #[bench]
 fn bench_bit_vec_big_iter(b: &mut Bencher) {
-    let bit_vec = BitVec::from_elem(BENCH_BITS, false);
+    let bit_vec = BitVec::<u32>::from_elem(BENCH_BITS, false);
     b.iter(|| {
         let mut sum = 0;
         for pres in &bit_vec {
@@ -109,7 +109,7 @@ fn bench_from_elem(b: &mut Bencher) {
     let bit = black_box(true);
     b.iter(|| {
         // create a BitVec and popcount it
-        BitVec::from_elem(cap, bit).blocks()
+        BitVec::<u32>::from_elem(cap, bit).blocks()
                                    .fold(0, |acc, b| acc + b.count_ones())
     });
     b.bytes = cap as u64 / 8;
