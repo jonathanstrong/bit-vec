@@ -13,7 +13,7 @@ use rand::{Rng, weak_rng, XorShiftRng};
 
 use test::{Bencher, black_box};
 
-const BENCH_BITS : usize = 1 << 14;
+const BENCH_BITS : usize = 1 << 16;
 const U32_BITS: usize = 32;
 
 fn rng() -> XorShiftRng {
