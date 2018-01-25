@@ -7,6 +7,7 @@
 // <LICENSE-MIT or http://opensource.org/licenses/MIT>, at your
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
+#![allow(unused_mut)]
 
 use super::BitVec;
 use rand::{Rng, weak_rng, XorShiftRng};
@@ -30,6 +31,24 @@ fn bench_usize_small(b: &mut Bencher) {
             bit_vec |= 1 << ((r.next_u32() as usize) % U32_BITS);
         }
         black_box(&bit_vec);
+    });
+}
+
+#[bench]
+fn bench_bit_vec_big_capacity(b: &mut Bencher) {
+    let mut bit_vec = BitVec::<u32>::from_elem(BENCH_BITS, false);
+    bit_vec.reserve(BENCH_BITS / 4); // just to make things interesting
+    b.iter(|| {
+        bit_vec.capacity()
+    });
+}
+
+#[bench]
+fn bench_bit_vec_big_len(b: &mut Bencher) {
+    let mut bit_vec = BitVec::<u32>::from_elem(BENCH_BITS, false);
+    bit_vec.reserve(BENCH_BITS / 4); // just to make things interesting
+    b.iter(|| {
+        bit_vec.len()
     });
 }
 
