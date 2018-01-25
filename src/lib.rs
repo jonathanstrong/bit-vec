@@ -91,6 +91,7 @@ use std::cmp::Ordering;
 use std::cmp;
 use std::fmt;
 use std::hash;
+use std::mem;
 use std::iter::repeat;
 use std::iter::FromIterator;
 use std::slice;
@@ -692,6 +693,7 @@ impl<B: BitBlock> BitVec<B> {
             }
         }
     }
+*/
 
     /// Splits the `BitVec` into two at the given bit,
     /// retaining the first half in-place and returning the second one.
@@ -705,7 +707,7 @@ impl<B: BitBlock> BitVec<B> {
     /// ```
     /// # #![feature(collections, bit_vec_append_split_off)]
     /// use bit_vec::BitVec;
-    /// let mut a = BitVec::new();
+    /// let mut a = BitVec::<u32>::new();
     /// a.push(true);
     /// a.push(false);
     /// a.push(false);
@@ -724,7 +726,7 @@ impl<B: BitBlock> BitVec<B> {
         let mut other = BitVec::new();
 
         if at == 0 {
-            swap(self, &mut other);
+            mem::swap(self, &mut other);
             return other;
         } else if at == self.len() {
             return other;
@@ -756,7 +758,6 @@ impl<B: BitBlock> BitVec<B> {
 
         other
     }
-*/
 
     /// Returns `true` if all bits are 0.
     ///
@@ -2011,12 +2012,12 @@ mod tests {
                            false, false, true, true, false, false, true, true,
                            true, false, false, true, false, true, false, true]));
     }
-
+*/
 
     #[test]
     fn test_bit_vec_split_off() {
         // Split at 0
-        let mut a = BitVec::new();
+        let mut a = BitVec::<u32>::new();
         a.push(true);
         a.push(false);
         a.push(false);
@@ -2044,7 +2045,7 @@ mod tests {
         assert!(a.eq_vec(&[true, false, false, true]));
 
         // Split at block boundary
-        let mut a = BitVec::from_bytes(&[0b10100000, 0b00010010, 0b10010010, 0b00110011, 0b11110011]);
+        let mut a = BitVec::<u32>::from_bytes(&[0b10100000, 0b00010010, 0b10010010, 0b00110011, 0b11110011]);
 
         let b = a.split_off(32);
 
@@ -2058,7 +2059,7 @@ mod tests {
         assert!(b.eq_vec(&[true, true, true, true, false, false, true, true]));
 
         // Don't split at block boundary
-        let mut a = BitVec::from_bytes(&[0b10100000, 0b00010010, 0b10010010, 0b00110011,
+        let mut a = BitVec::<u32>::from_bytes(&[0b10100000, 0b00010010, 0b10010010, 0b00110011,
                                          0b01101011, 0b10101101]);
 
         let b = a.split_off(13);
@@ -2074,7 +2075,6 @@ mod tests {
                            false, true, true,  true, false, true, false, true,
                            true, false, true]));
     }
-*/
 
     #[test]
     fn test_into_iter() {
