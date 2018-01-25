@@ -869,6 +869,12 @@ impl<B: BitBlock> BitVec<B> {
     /// If `len` is greater than the vector's current length, this has no
     /// effect.
     ///
+    /// Internally, this function calls `truncate(n)` on a private `Vec<B>`
+    /// that stores the bytes of the `BitVec<B>`, where `n` is the calculated
+    /// length needed to store `len` bits and `B` is the primative type used
+    /// as bit storage blocks. `Vec::truncate(n)` has no effect on the allocated
+    /// capacity of a `Vec`.
+    ///
     /// # Examples
     ///
     /// ```
