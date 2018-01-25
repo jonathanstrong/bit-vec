@@ -110,6 +110,7 @@ pub trait BitBlock:
 	Shr<usize, Output=Self> +
 	Not<Output=Self> +
 	BitAnd<Self, Output=Self> +
+	BitAndAssign<Self> +
 	BitOr<Self, Output=Self> +
 	BitXor<Self, Output=Self> +
 	Rem<Self, Output=Self> +
@@ -695,7 +696,7 @@ impl<B: BitBlock> BitVec<B> {
     }
 */
 
-    /// Splits the `BitVec` into two at the given bit,
+    /// Splits the `BitVec` into two at the given bit (i.e. index),
     /// retaining the first half in-place and returning the second one.
     ///
     /// # Panics
@@ -719,6 +720,12 @@ impl<B: BitBlock> BitVec<B> {
     /// assert_eq!(b.len(), 2);
     /// assert!(a.eq_vec(&[true, false]));
     /// assert!(b.eq_vec(&[false, true]));
+    ///
+    /// let c = a.split_off(0);
+    /// assert_eq!(a.len(), 0);
+    /// assert!(a.eq_vec(&[]));
+    /// assert!(c.eq_vec(&[true, false]));
+    ///
     /// ```
     pub fn split_off(&mut self, at: usize) -> Self {
         assert!(at <= self.len(), "`at` out of bounds");
@@ -914,8 +921,8 @@ impl<B: BitBlock> BitVec<B> {
     #[inline]
     pub fn reserve(&mut self, additional: usize) {
         let desired_cap = self.len().checked_add(additional).expect("capacity overflow");
-        let storage_len = self.storage.len();
         if desired_cap > self.capacity() {
+            let storage_len = self.storage.len();
             self.storage.reserve(blocks_for_bits::<B>(desired_cap) - storage_len);
         }
     }
