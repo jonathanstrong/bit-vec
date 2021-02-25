@@ -706,7 +706,6 @@ impl<B: BitBlock> BitVec<B> {
     /// # Examples
     ///
     /// ```
-    /// # #![feature(collections, bit_vec_append_split_off)]
     /// use bit_vec::BitVec;
     /// let mut a = BitVec::<u32>::new();
     /// a.push(true);
